@@ -1,4 +1,4 @@
-# All Layers Fully-Connected
+# All Layers, Fully-Connected
 
 This project is derived from [ECP-CANDLE/Benchmarks (P1B1)](https://github.com/ECP-CANDLE/Benchmarks/tree/master/Pilot1/P1B1) to experiment with workloads on networks where all layers are fully-connected.
 
