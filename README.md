@@ -10,8 +10,8 @@ This project is derived from [ECP-CANDLE/Benchmarks (P1B1)](https://github.com/E
 #### Train/Val Loss, 100 Epochs
 ![TensorBoard Plot](https://github.com/aurotripathy/all-fully-connected/blob/master/Pilot1/P1B1/results/Capture100-epochs.PNG "Single GPU 100 Epochs")
 
-#### Train/Val Loss, N=4 GPUs, 400 Epochs
-![TensorBoard Plot](https://github.com/aurotripathy/all-fully-connected/blob/master/Pilot1/P1B1/results/Capture400-epochs.PNG "N=4 GPUs 400 Epochs")
+#### Train/Val Loss, N=4 GPUs, 100 Epochs
+![TensorBoard Plot](https://github.com/aurotripathy/all-fully-connected/blob/master/Pilot1/P1B1/results/Capture100-epochs-4-gpu.PNG "N=4 GPUs, 100 Epochs")
 
 
 
