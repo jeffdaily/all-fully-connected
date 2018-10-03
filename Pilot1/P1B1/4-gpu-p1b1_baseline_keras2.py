@@ -13,8 +13,8 @@ from keras.utils import multi_gpu_model
 import p1b1
 
 N_GPUS = 4
-EPOCH = 100 * N_GPUS
-BATCH = 50
+EPOCH = 100
+BATCH = 50 * N_GPUS
 
 P     = 60025    # 245 x 245
 N1    = 2000
