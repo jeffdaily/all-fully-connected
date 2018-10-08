@@ -32,6 +32,7 @@ import p1b3
 from p1b3 import logger
 
 import os
+from pudb import set_trace
 
 # Model and Training parameters
 
@@ -418,6 +419,7 @@ def main():
     model.compile(loss=args.loss, optimizer=args.optimizer)
 
     train_gen = p1b3.DataGenerator(loader, batch_size=args.batch_size, shape=gen_shape, name='train_gen').flow()
+    set_trace()
     val_gen = p1b3.DataGenerator(loader, partition='val', batch_size=args.batch_size, shape=gen_shape, name='val_gen').flow()
     val_gen2 = p1b3.DataGenerator(loader, partition='val', batch_size=args.batch_size, shape=gen_shape, name='val_gen2').flow()
     test_gen = p1b3.DataGenerator(loader, partition='test', batch_size=args.batch_size, shape=gen_shape, name='test_gen').flow()
