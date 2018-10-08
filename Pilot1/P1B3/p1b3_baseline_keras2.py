@@ -31,6 +31,8 @@ import matplotlib.pyplot as plt
 import p1b3
 from p1b3 import logger
 
+import os
+
 # Model and Training parameters
 
 # Seed for random generation
@@ -173,6 +175,9 @@ def get_parser():
     parser.add_argument("--workers", type=int,
                         default=WORKERS,
                         help="number of data generator workers")
+    parser.add_argument("--out_dir", type=str,
+                        default='/root/data/p1b3',
+                        help="outputs go in this folder")
 
     return parser
 
@@ -343,7 +348,7 @@ def main():
 
     ext = extension_from_parameters(args)
 
-    logfile = args.logfile if args.logfile else args.save+ext+'.log'
+    logfile = args.logfile if args.logfile else os.path.join(args.out_dir, args.save)+ext+'.log'
 
     fh = logging.FileHandler(logfile)
     fh.setFormatter(logging.Formatter("[%(asctime)s %(process)d] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
@@ -425,12 +430,12 @@ def main():
     val_steps = args.val_steps if args.val_steps else val_steps
     test_steps = args.test_steps if args.test_steps else test_steps
 
-    checkpointer = ModelCheckpoint(filepath=args.save+'.model'+ext+'.h5', save_best_only=True)
+    checkpointer = ModelCheckpoint(filepath=os.path.join(args.out_dir, args.save)+'.model'+ext+'.h5', save_best_only=True)
     progbar = MyProgbarLogger(train_steps * args.batch_size)
     history = MyLossHistory(progbar=progbar, val_gen=val_gen2, test_gen=test_gen,
                             val_steps=val_steps, test_steps=test_steps,
                             metric=args.loss, category_cutoffs=args.category_cutoffs,
-                            ext=ext, pre=args.save)
+                            ext=ext, pre=os.path.join(args.out_dir, args.save))
 
     model.fit_generator(train_gen, train_steps,
                         epochs=args.epochs,
