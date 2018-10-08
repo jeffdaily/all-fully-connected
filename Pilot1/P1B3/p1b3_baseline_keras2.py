@@ -371,6 +371,8 @@ def main():
                              subsample=args.subsample,
                              category_cutoffs=args.category_cutoffs)
 
+    print('Loader input dim', loader.input_dim)
+
     gen_shape = None
     out_dim = 1
 
