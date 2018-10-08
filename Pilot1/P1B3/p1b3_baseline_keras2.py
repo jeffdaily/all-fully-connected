@@ -22,6 +22,8 @@ from keras.callbacks import Callback, ModelCheckpoint, ProgbarLogger
 
 from sklearn.preprocessing import Imputer
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler
+from keras.callbacks import TensorBoard
+from time import time
 
 # For non-interactive plotting
 import matplotlib as mpl
@@ -419,7 +421,6 @@ def main():
     model.compile(loss=args.loss, optimizer=args.optimizer)
 
     train_gen = p1b3.DataGenerator(loader, batch_size=args.batch_size, shape=gen_shape, name='train_gen').flow()
-    set_trace()
     val_gen = p1b3.DataGenerator(loader, partition='val', batch_size=args.batch_size, shape=gen_shape, name='val_gen').flow()
     val_gen2 = p1b3.DataGenerator(loader, partition='val', batch_size=args.batch_size, shape=gen_shape, name='val_gen2').flow()
     test_gen = p1b3.DataGenerator(loader, partition='test', batch_size=args.batch_size, shape=gen_shape, name='test_gen').flow()
@@ -439,12 +440,13 @@ def main():
                             metric=args.loss, category_cutoffs=args.category_cutoffs,
                             ext=ext, pre=os.path.join(args.out_dir, args.save))
 
+    tensorboard = TensorBoard(log_dir="{}/{}".format(os.path.join(args.out_dir), time()))
     model.fit_generator(train_gen, train_steps,
                         epochs=args.epochs,
                         validation_data=val_gen,
                         validation_steps=val_steps,
                         verbose=0,
-                        callbacks=[checkpointer, history, progbar],
+                        callbacks=[checkpointer, history, progbar, tensorboard],
                         pickle_safe=True,
                         workers=args.workers)
 
