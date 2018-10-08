@@ -1,0 +1,1 @@
+python3 p1b3_baseline_keras2.py -e 5 --train_steps 100 --val_steps 10 --test_steps 10 --batch_size 200
