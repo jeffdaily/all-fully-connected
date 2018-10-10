@@ -64,10 +64,18 @@ SCALING = 'std'
 FEATURE_SUBSAMPLE = 0
 
 # Number of units in fully connected (dense) layers
-D1 = 1000
-D2 = 500
-D3 = 100
-D4 = 50
+# D1 = 6000
+# D2 = 500
+# D3 = 100
+# D4 = 50
+
+# 2x bloat per layer, total params over 350 mil 
+D1 = 12000
+D2 = 1000
+D3 = 200
+D4 = 100
+
+
 DENSE_LAYERS = [D1, D2, D3, D4]
 
 # Number of units per convolution layer or locally connected layer
