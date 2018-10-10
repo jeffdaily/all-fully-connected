@@ -6,7 +6,7 @@ This project is derived from [ECP-CANDLE/Benchmarks (P1B1)](https://github.com/E
 [Code for N=1 GPU](https://github.com/aurotripathy/all-fully-connected/blob/master/Pilot1/P1B3/p1b3_baseline_keras2.py)
 
 #### Train/Val Loss, 200 Epochs
-![TensorBoard Plot](https://github.com/aurotripathy/all-fully-connected/blob/master/Pilot1/P1B1/results/Capture100-epochs.PNG "Single GPU 200 Epochs")
+![TensorBoard Plot](https://github.com/aurotripathy/all-fully-connected/blob/master/Pilot1/P1B3/results/p1b3-200-epochs.PNG "Single GPU 200 Epochs")
 
 ### Experiments, P1B1
 [Code for N=1 GPU](https://github.com/aurotripathy/all-fully-connected/blob/master/Pilot1/P1B1/p1b1_baseline_keras2.py)
