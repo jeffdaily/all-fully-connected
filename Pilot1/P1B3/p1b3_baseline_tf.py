@@ -461,7 +461,7 @@ def main():
             feed_dict = {X: X_batch.reshape(args.batch_size, loader.input_dim, 1),
                          Y_: y_batch.reshape(args.batch_size, 1)}
             cost, _ = sess.run([objective, train], feed_dict)
-            if i % 50:
+            if i % 50 == 0:
                 print('Epoch :', i, 'Cost :', cost)
 
     train_steps = int(loader.n_train/args.batch_size)
