@@ -433,7 +433,7 @@ def main():
     # result answers will go here
     Y_ = tf.placeholder(tf.float32, [None, 1])
     # weights W[784, 10]   784=28*28
-    W = tf.Variable(tf.zeros([loader.input_dim, 1]))
+    W = tf.Variable(tf.truncated_normal([loader.input_dim, 1]))
     # biases b[1]
     b = tf.Variable(tf.zeros([1]))
 
