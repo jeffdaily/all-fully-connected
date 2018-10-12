@@ -358,34 +358,6 @@ class MyProgbarLogger(ProgbarLogger):
         logger.debug(epoch_log)
 
 
-def neural_net_model(X_data, input_dim):
-    W_1 = tf.Variable(tf.random_uniform([input_dim, D1]))
-    b_1 = tf.Variable(tf.zeros([D1]))
-    layer_1 = tf.add(tf.matmul(X_data, W_1), b_1)
-    layer_1 = tf.nn.relu(layer_1)
-
-    W_2 = tf.Variable(tf.random_uniform([D1, D2]))
-    b_2 = tf.Variable(tf.zeros([D2]))
-    layer_2 = tf.add(tf.matmul(layer_1, W_2), b_2)
-    layer_2 = tf.nn.relu(layer_2)
-
-    W_3 = tf.Variable(tf.random_uniform([D2, D3]))
-    b_3 = tf.Variable(tf.zeros([D3]))
-    layer_3 = tf.add(tf.matmul(layer_2, W_3), b_3)
-    layer_3 = tf.nn.relu(layer_3)
-
-    W_4 = tf.Variable(tf.random_uniform([D3, D4]))
-    b_4 = tf.Variable(tf.zeros([D4]))
-    layer_4 = tf.add(tf.matmul(layer_3, W_4), b_4)
-    layer_4 = tf.nn.relu(layer_4)
-
-    W_Out = tf.Variable(tf.random_uniform([D4, 1]))
-    b_Out = tf.Variable(tf.zeros([1]))
-    output = tf.add(tf.matmul(layer_4, W_Out), b_Out)
-
-    return output, W_Out
-
-
 def main():
     parser = get_parser()
     args = parser.parse_args()
@@ -428,16 +400,15 @@ def main():
     out_dim = 1
 
     X = tf.placeholder(tf.float32, [None, loader.input_dim])
-    # result answers will go here
+    X_reshape = tf.reshape(X, [-1, loader.input_dim])
+
     Y_ = tf.placeholder(tf.float32, [None])
-    # weights W[784, 10]   784=28*28
+
     W = tf.Variable(tf.truncated_normal([loader.input_dim, 1]))
-    # biases b[1]
     b = tf.Variable(tf.zeros([1]))
 
-    XX = tf.reshape(X, [-1, loader.input_dim])
     # The model
-    Y = tf.add(tf.matmul(XX, W), b)
+    Y = tf.add(tf.matmul(X_reshape, W), b)
 
     set_trace()
 
