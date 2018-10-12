@@ -69,8 +69,8 @@ D2 = 1000
 D3 = 200
 D4 = 100
 
-
 DENSE_LAYERS = [D1, D2, D3, D4]
+DENSE_LAYERS_DICT = {'D1': D1, 'D2': D2, 'D3': D3, 'D4': D4}
 
 # Number of units per convolution layer or locally connected layer
 CONV_LAYERS = [0, 0, 0]  # filters, filter_len, stride
@@ -358,6 +358,22 @@ class MyProgbarLogger(ProgbarLogger):
         logger.debug(epoch_log)
 
 
+def model(X, input_dim):
+    X_reshape = tf.reshape(X, [-1, input_dim])
+
+    dense_1 = tf.layers.dense(inputs=X_reshape, units=DENSE_LAYERS_DICT['D1'],
+                              activation=tf.nn.relu)
+    dense_2 = tf.layers.dense(inputs=dense_1, units=DENSE_LAYERS_DICT['D2'],
+                              activation=tf.nn.relu)
+    dense_3 = tf.layers.dense(inputs=dense_2, units=DENSE_LAYERS_DICT['D3'],
+                              activation=tf.nn.relu)
+    dense_4 = tf.layers.dense(inputs=dense_3, units=DENSE_LAYERS_DICT['D4'],
+                              activation=tf.nn.relu)
+
+    dense_5 = tf.layers.dense(inputs=dense_4, units=1)
+    return dense_5
+
+
 def main():
     parser = get_parser()
     args = parser.parse_args()
@@ -400,15 +416,8 @@ def main():
     out_dim = 1
 
     X = tf.placeholder(tf.float32, [None, loader.input_dim])
-    X_reshape = tf.reshape(X, [-1, loader.input_dim])
-
     Y_ = tf.placeholder(tf.float32, [None])
-
-    W = tf.Variable(tf.truncated_normal([loader.input_dim, 1]))
-    b = tf.Variable(tf.zeros([1]))
-
-    # The model
-    Y = tf.add(tf.matmul(X_reshape, W), b)
+    Y = model(X, loader.input_dim)
 
     set_trace()
 
@@ -424,7 +433,6 @@ def main():
     objective = tf.reduce_mean(tf.square(Y - Y_))
     train = tf.train.GradientDescentOptimizer(0.001).minimize(objective)
 
-    c_t = []
     with tf.Session() as sess:
         sess.run(tf.initialize_all_variables())
 
@@ -433,7 +441,7 @@ def main():
                          Y_: y_batch.reshape(args.batch_size)}
             cost, _ = sess.run([objective, train], feed_dict)
             if i % 50 == 0:
-                print('Epoch :', i, 'Cost :', cost)
+                print('Batch :', i, 'Cost :', cost)
 
     train_steps = int(loader.n_train/args.batch_size)
     val_steps = int(loader.n_val/args.batch_size)
