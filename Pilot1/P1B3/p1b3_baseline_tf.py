@@ -424,14 +424,12 @@ def main():
 
     print('Loader input dim', loader.input_dim)
 
-    set_trace()
     gen_shape = None
     out_dim = 1
 
-    # input X: loader.input_dim features, the first dimension (None) will index the images in the mini-batch
-    X = tf.placeholder(tf.float32, [None, loader.input_dim, 1])
+    X = tf.placeholder(tf.float32, [None, loader.input_dim])
     # result answers will go here
-    Y_ = tf.placeholder(tf.float32, [None, 1])
+    Y_ = tf.placeholder(tf.float32, [None])
     # weights W[784, 10]   784=28*28
     W = tf.Variable(tf.truncated_normal([loader.input_dim, 1]))
     # biases b[1]
@@ -440,6 +438,8 @@ def main():
     XX = tf.reshape(X, [-1, loader.input_dim])
     # The model
     Y = tf.add(tf.matmul(XX, W), b)
+
+    set_trace()
 
     train_gen = p1b3.DataGenerator(loader, batch_size=args.batch_size,
                                    shape=gen_shape, name='train_gen').flow()
@@ -458,8 +458,8 @@ def main():
         sess.run(tf.initialize_all_variables())
 
         for i, (X_batch, y_batch) in enumerate(train_gen):
-            feed_dict = {X: X_batch.reshape(args.batch_size, loader.input_dim, 1),
-                         Y_: y_batch.reshape(args.batch_size, 1)}
+            feed_dict = {X: X_batch.reshape(args.batch_size, loader.input_dim),
+                         Y_: y_batch.reshape(args.batch_size)}
             cost, _ = sess.run([objective, train], feed_dict)
             if i % 50 == 0:
                 print('Epoch :', i, 'Cost :', cost)
