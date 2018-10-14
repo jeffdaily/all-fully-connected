@@ -5,7 +5,7 @@ with tf.device('/gpu:0'):
     a = tf.get_variable(
         f"a", initializer=tf.constant(1.0, shape=(2, 2)))
 
-with tf.device('/gpu:0'):
+with tf.device('/gpu:1'):
     b = tf.get_variable(
         f"b", initializer=tf.constant(2.0, shape=(2, 2)))
 
