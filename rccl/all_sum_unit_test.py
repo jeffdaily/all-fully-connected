@@ -20,3 +20,9 @@ with tf.device('/gpu:0'):
 
 print(summed[0])
 print(summed[1])
+
+# expected output
+# [[3. 3.]
+#  [3. 3.]]
+# [[3. 3.]
+#  [3. 3.]]
