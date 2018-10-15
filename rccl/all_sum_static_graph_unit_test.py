@@ -1,3 +1,10 @@
+"""
+invocation
+HIP_VISIBLE_DEVICES=0,1 python3 all_sum_static_graph_unit_test.py
+or
+RCCL_TRACE_RT=7 HIP_VISIBLE_DEVICES=0,1 python3 all_sum_static_graph_unit_test.py
+"""
+
 import tensorflow as tf
 from tensorflow.contrib.rccl import all_sum
 
