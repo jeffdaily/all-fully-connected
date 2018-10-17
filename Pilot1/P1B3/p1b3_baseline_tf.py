@@ -371,6 +371,10 @@ def model(X, input_dim):
                               activation=tf.nn.relu)
 
     dense_5 = tf.layers.dense(inputs=dense_4, units=1)
+
+    param_count = np.sum([np.prod(v.shape) for v in tf.trainable_variables()])
+
+    print('Total Param Count: {}'.format(param_count))
     return dense_5
 
 
