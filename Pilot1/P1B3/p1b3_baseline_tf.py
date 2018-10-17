@@ -420,7 +420,7 @@ def main():
     out_dim = 1
 
     X = tf.placeholder(tf.float32, [None, loader.input_dim])
-    Y_ = tf.placeholder(tf.float32, [None])
+    Y_ = tf.placeholder(tf.float32, [None, 1])
     Y = model(X, loader.input_dim)
 
     set_trace()
@@ -434,16 +434,19 @@ def main():
     test_gen = p1b3.DataGenerator(loader, partition='test', batch_size=args.batch_size,
                                   shape=gen_shape, name='test_gen').flow()
 
-    objective = tf.reduce_mean(tf.square(Y - Y_))
-    train = tf.train.GradientDescentOptimizer(0.001).minimize(objective)
-
+    # objective = tf.reduce_mean(tf.square(Y - Y_))
+    # train = tf.train.GradientDescentOptimizer(0.001).minimize(objective)
+    mse = tf.losses.mean_squared_error(Y_, Y)  # the loss function
+    train = tf.train.GradientDescentOptimizer(0.001).minimize(mse)
+    
     with tf.Session() as sess:
         sess.run(tf.initialize_all_variables())
 
         for i, (X_batch, y_batch) in enumerate(train_gen):
             feed_dict = {X: X_batch.reshape(args.batch_size, loader.input_dim),
-                         Y_: y_batch.reshape(args.batch_size)}
-            cost, _ = sess.run([objective, train], feed_dict)
+                         Y_: y_batch.reshape(args.batch_size, 1)}
+            # cost, _ = sess.run([objective, train], feed_dict)
+            cost, _ = sess.run([mse, train], feed_dict)
             if i % 50 == 0:
                 print('Batch :', i, 'Cost :', cost)
 
