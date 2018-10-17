@@ -22,6 +22,7 @@ sys.path.append(lib_path)
 
 from data_utils import get_file
 
+from pudb import set_trace
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +30,8 @@ SEED = 2017
 
 np.set_printoptions(threshold=np.nan)
 np.random.seed(SEED)
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def get_p1_file(link):
@@ -119,7 +122,7 @@ def load_cellline_expressions(path, ncols=None, scaling='std'):
     """
 
     df = pd.read_csv(path, sep='\t', engine='c',
-                     na_values=['na','-',''])
+                     na_values=['na', '-', ''])
 
     df1 = df['CellLine']
     df1 = df1.map(lambda x: x.replace('.', ':'))
@@ -156,7 +159,7 @@ def load_cellline_mirna(path, ncols=None, scaling='std'):
     """
 
     df = pd.read_csv(path, sep='\t', engine='c',
-                     na_values=['na','-',''])
+                     na_values=['na', '-', ''])
 
     df1 = df['CellLine']
     df1 = df1.map(lambda x: x.replace('.', ':'))
@@ -236,10 +239,10 @@ def load_drug_descriptors(path, ncols=None, scaling='std'):
     """
 
     df = pd.read_csv(path, sep='\t', engine='c',
-                     na_values=['na','-',''],
+                     na_values=['na', '-', ''],
                      dtype=np.float32)
 
-    df1 = pd.DataFrame(df.loc[:,'NAME'].astype(int).astype(str))
+    df1 = pd.DataFrame(df.loc[:, 'NAME'].astype(int).astype(str))
     df1.rename(columns={'NAME': 'NSC'}, inplace=True)
 
     df2 = df.drop('NAME', 1)
@@ -249,7 +252,7 @@ def load_drug_descriptors(path, ncols=None, scaling='std'):
     total = df2.shape[1]
     if ncols and ncols < total:
         usecols = np.random.choice(total, size=ncols, replace=False)
-        df2 = df2.iloc[:,usecols]
+        df2 = df2.iloc[:, usecols]
 
     df2 = impute_and_scale(df2, scaling)
     df2 = df2.astype(np.float32)
@@ -310,17 +313,20 @@ def load_dose_response(path, min_logconc=-5., max_logconc=-5., subsample=None):
     """
 
     df = pd.read_csv(path, sep=',', engine='c',
-                     na_values=['na','-',''],
-                     dtype={'NSC':object, 'CELLNAME':str, 'LOG_CONCENTRATION':np.float32, 'GROWTH':np.float32})
+                     na_values=['na', '-', ''], nrows=100000,
+                     dtype={'NSC': object, 'CELLNAME': str, 'LOG_CONCENTRATION': np.float32, 'GROWTH': np.float32})
 
-    df = df[(df['LOG_CONCENTRATION'] >= min_logconc) & (df['LOG_CONCENTRATION'] <= max_logconc)]
+    df = df[(df['LOG_CONCENTRATION'] >= min_logconc) &
+            (df['LOG_CONCENTRATION'] <= max_logconc)]
 
     df = df[['NSC', 'CELLNAME', 'GROWTH', 'LOG_CONCENTRATION']]
 
     if subsample and subsample == 'naive_balancing':
         df1 = df[df['GROWTH'] <= 0]
-        df2 = df[(df['GROWTH'] > 0) & (df['GROWTH'] < 50)].sample(frac=0.7, random_state=SEED)
-        df3 = df[(df['GROWTH'] >= 50) & (df['GROWTH'] <= 100)].sample(frac=0.18, random_state=SEED)
+        df2 = df[(df['GROWTH'] > 0) & (df['GROWTH'] < 50)
+                 ].sample(frac=0.7, random_state=SEED)
+        df3 = df[(df['GROWTH'] >= 50) & (df['GROWTH'] <= 100)
+                 ].sample(frac=0.18, random_state=SEED)
         df4 = df[df['GROWTH'] > 100].sample(frac=0.01, random_state=SEED)
         df = pd.concat([df1, df2, df3, df4])
 
@@ -381,8 +387,11 @@ class DataLoader(object):
         test_cell_path = get_p1_file(server+'P1B3_test_celllines.txt')
         test_drug_path = get_p1_file(server+'P1B3_test_drugs.txt')
 
-        df = load_dose_response(dose_resp_path, min_logconc=min_logconc, max_logconc=max_logconc, subsample=subsample)
-        logger.info('Loaded {} unique (D, CL) response sets.'.format(df.shape[0]))
+        set_trace()
+        df = load_dose_response(dose_resp_path, min_logconc=min_logconc,
+                                max_logconc=max_logconc, subsample=subsample)
+        logger.info(
+            'Loaded {} unique (D, CL) response sets.'.format(df.shape[0]))
         # df[['GROWTH', 'LOG_CONCENTRATION']].to_csv('all.response.csv')
         df = df.reset_index()
 
@@ -401,33 +410,45 @@ class DataLoader(object):
 
         for fea in self.cell_features:
             if fea == 'expression':
-                self.df_cell_expr = load_cellline_expressions(cell_expr_path, ncols=feature_subsample, scaling=scaling)
-                self.input_shapes['cell_expression'] = (self.df_cell_expr.shape[1] - 1,)
+                self.df_cell_expr = load_cellline_expressions(
+                    cell_expr_path, ncols=feature_subsample, scaling=scaling)
+                self.input_shapes['cell_expression'] = (
+                    self.df_cell_expr.shape[1] - 1,)
                 df = df.merge(self.df_cell_expr[['CELLNAME']], on='CELLNAME')
             elif fea == 'mirna':
-                self.df_cell_mirna = load_cellline_mirna(cell_mrna_path, ncols=feature_subsample, scaling=scaling)
-                self.input_shapes['cell_microRNA'] = (self.df_cell_mirna.shape[1] - 1,)
+                self.df_cell_mirna = load_cellline_mirna(
+                    cell_mrna_path, ncols=feature_subsample, scaling=scaling)
+                self.input_shapes['cell_microRNA'] = (
+                    self.df_cell_mirna.shape[1] - 1,)
                 df = df.merge(self.df_cell_mirna[['CELLNAME']], on='CELLNAME')
             elif fea == 'proteome':
-                self.df_cell_prot = load_cellline_proteome(cell_prot_path, cell_kino_path, ncols=feature_subsample, scaling=scaling)
-                self.input_shapes['cell_proteome'] = (self.df_cell_prot.shape[1] - 1,)
+                self.df_cell_prot = load_cellline_proteome(
+                    cell_prot_path, cell_kino_path, ncols=feature_subsample, scaling=scaling)
+                self.input_shapes['cell_proteome'] = (
+                    self.df_cell_prot.shape[1] - 1,)
                 df = df.merge(self.df_cell_prot[['CELLNAME']], on='CELLNAME')
             elif fea == 'categorical':
                 df_cell_ids = df[['CELLNAME']].drop_duplicates()
-                cell_ids = df_cell_ids['CELLNAME'].map(lambda x: x.replace(':', '.'))
+                cell_ids = df_cell_ids['CELLNAME'].map(
+                    lambda x: x.replace(':', '.'))
                 df_cell_cat = pd.get_dummies(cell_ids)
                 df_cell_cat.index = df_cell_ids['CELLNAME']
                 self.df_cell_cat = df_cell_cat.reset_index()
-                self.input_shapes['cell_categorical'] = (self.df_cell_cat.shape[1] - 1,)
+                self.input_shapes['cell_categorical'] = (
+                    self.df_cell_cat.shape[1] - 1,)
 
         for fea in self.drug_features:
             if fea == 'descriptors':
-                self.df_drug_desc = load_drug_descriptors(drug_desc_path, ncols=feature_subsample, scaling=scaling)
-                self.input_shapes['drug_descriptors'] = (self.df_drug_desc.shape[1] - 1,)
+                self.df_drug_desc = load_drug_descriptors(
+                    drug_desc_path, ncols=feature_subsample, scaling=scaling)
+                self.input_shapes['drug_descriptors'] = (
+                    self.df_drug_desc.shape[1] - 1,)
                 df = df.merge(self.df_drug_desc[['NSC']], on='NSC')
             elif fea == 'latent':
-                self.df_drug_auen = load_drug_autoencoded(drug_auen_path, ncols=feature_subsample, scaling=scaling)
-                self.input_shapes['drug_SMILES_latent'] = (self.df_drug_auen.shape[1] - 1,)
+                self.df_drug_auen = load_drug_autoencoded(
+                    drug_auen_path, ncols=feature_subsample, scaling=scaling)
+                self.input_shapes['drug_SMILES_latent'] = (
+                    self.df_drug_auen.shape[1] - 1,)
                 df = df.merge(self.df_drug_auen[['NSC']], on='NSC')
             elif fea == 'noise':
                 df_drug_ids = df[['NSC']].drop_duplicates()
@@ -435,35 +456,46 @@ class DataLoader(object):
                 df_rand = pd.DataFrame(noise, index=df_drug_ids['NSC'],
                                        columns=['RAND-{:03d}'.format(x) for x in range(500)])
                 self.df_drug_rand = df_rand.reset_index()
-                self.input_shapes['drug_random_vector'] = (self.df_drug_rand.shape[1] - 1,)
+                self.input_shapes['drug_random_vector'] = (
+                    self.df_drug_rand.shape[1] - 1,)
 
-        logger.debug('Filtered down to {} rows with matching information.'.format(df.shape[0]))
+        logger.debug(
+            'Filtered down to {} rows with matching information.'.format(df.shape[0]))
         # df[['GROWTH', 'LOG_CONCENTRATION']].to_csv('filtered.response.csv')
 
         df_test_cell = pd.read_csv(test_cell_path)
-        df_test_drug = pd.read_csv(test_drug_path, dtype={'NSC':object})
+        df_test_drug = pd.read_csv(test_drug_path, dtype={'NSC': object})
 
-        df_train_val = df[(~df['NSC'].isin(df_test_drug['NSC'])) & (~df['CELLNAME'].isin(df_test_cell['CELLNAME']))]
-        logger.debug('Combined train and validation set has {} rows'.format(df_train_val.shape[0]))
+        df_train_val = df[(~df['NSC'].isin(df_test_drug['NSC'])) & (
+            ~df['CELLNAME'].isin(df_test_cell['CELLNAME']))]
+        logger.debug('Combined train and validation set has {} rows'.format(
+            df_train_val.shape[0]))
 
         if test_cell_split and test_cell_split > 0:
-            df_test_cell = df_train_val[['CELLNAME']].drop_duplicates().sample(frac=test_cell_split, random_state=SEED)
-            logger.debug('Use unseen drugs and a fraction of seen cell lines for testing: ' + ', '.join(sorted(list(df_test_cell['CELLNAME']))))
+            df_test_cell = df_train_val[['CELLNAME']].drop_duplicates().sample(
+                frac=test_cell_split, random_state=SEED)
+            logger.debug('Use unseen drugs and a fraction of seen cell lines for testing: ' +
+                         ', '.join(sorted(list(df_test_cell['CELLNAME']))))
         else:
-            logger.debug('Use unseen drugs and predefined unseen cell lines for testing: ' + ', '.join(sorted(list(df_test_cell['CELLNAME']))))
+            logger.debug('Use unseen drugs and predefined unseen cell lines for testing: ' +
+                         ', '.join(sorted(list(df_test_cell['CELLNAME']))))
 
-        df_test = df.merge(df_test_cell, on='CELLNAME').merge(df_test_drug, on='NSC')
+        df_test = df.merge(df_test_cell, on='CELLNAME').merge(
+            df_test_drug, on='NSC')
         logger.debug('Test set has {} rows'.format(df_test.shape[0]))
 
         if shuffle:
             df_train_val = df_train_val.sample(frac=1.0, random_state=SEED)
+            set_trace()
             df_test = df_test.sample(frac=1.0, random_state=SEED)
 
-        self.df_response = pd.concat([df_train_val, df_test]).reset_index(drop=True)
+        self.df_response = pd.concat(
+            [df_train_val, df_test]).reset_index(drop=True)
 
         if scramble:
             growth = self.df_response[['GROWTH']]
-            random_growth = growth.iloc[np.random.permutation(np.arange(growth.shape[0]))].reset_index()
+            random_growth = growth.iloc[np.random.permutation(
+                np.arange(growth.shape[0]))].reset_index()
             self.df_response[['GROWTH']] = random_growth['GROWTH']
             logger.warn('Randomly shuffled dose response growth values.')
 
@@ -489,7 +521,8 @@ class DataLoader(object):
         self.n_test = df_test.shape[0]
         self.n_val = int(self.total * val_split)
         self.n_train = self.total - self.n_val
-        logger.info('Rows in train: {}, val: {}, test: {}'.format(self.n_train, self.n_val, self.n_test))
+        logger.info('Rows in train: {}, val: {}, test: {}'.format(
+            self.n_train, self.n_val, self.n_test))
 
         logger.info('Input features shapes:')
         for k, v in self.input_shapes.items():
@@ -537,7 +570,8 @@ class DataGenerator(object):
             self.cycle = cycle(range(data.total, data.total + data.n_test))
             self.num_data = data.n_test
         else:
-            raise Exception('Data partition "{}" not recognized.'.format(partition))
+            raise Exception(
+                'Data partition "{}" not recognized.'.format(partition))
 
     def flow(self):
         """Keep generating data batches
