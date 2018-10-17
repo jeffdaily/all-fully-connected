@@ -69,7 +69,7 @@ FEATURE_SUBSAMPLE = 0
 # D3 = 100
 # D4 = 50
 
-# 2x bloat per layer, total params over 350 mil 
+# 2x bloat per layer, total params over 350 mil
 D1 = 12000
 D2 = 1000
 D3 = 200
@@ -79,7 +79,7 @@ D4 = 100
 DENSE_LAYERS = [D1, D2, D3, D4]
 
 # Number of units per convolution layer or locally connected layer
-CONV_LAYERS = [0, 0, 0] # filters, filter_len, stride
+CONV_LAYERS = [0, 0, 0]  # filters, filter_len, stride
 POOL = 10
 
 MIN_LOGCONC = -5.
@@ -141,7 +141,8 @@ def get_parser():
                         help="type of feature scaling; 'minabs': to [-1,1]; 'minmax': to [0,1], 'std': standard unit normalization; 'none': no normalization")
     parser.add_argument("--cell_features", nargs='+',
                         default=['expression'],
-                        choices=['expression', 'mirna', 'proteome', 'all', 'categorical'],
+                        choices=['expression', 'mirna',
+                                 'proteome', 'all', 'categorical'],
                         help="use one or more cell line feature sets: 'expression', 'mirna', 'proteome', 'all'; or use 'categorical' for one-hot encoding of cell lines")
     parser.add_argument("--drug_features", nargs='+',
                         default=['descriptors'],
@@ -187,7 +188,7 @@ def get_parser():
                         default=WORKERS,
                         help="number of data generator workers")
     parser.add_argument("--out_dir", type=str,
-                        default='/root/data/p1b3',
+                        default='.',
                         help="outputs go in this folder")
 
     return parser
@@ -211,7 +212,8 @@ def extension_from_parameters(args):
             stride = args.conv[i+2]
             if filters <= 0 or filter_len <= 0 or stride <= 0:
                 break
-            ext += '.{}{}={},{},{}'.format(name, l+1, filters, filter_len, stride)
+            ext += '.{}{}={},{},{}'.format(name,
+                                           l+1, filters, filter_len, stride)
         if args.pool and args.conv[0] and args.conv[1]:
             ext += '.P={}'.format(args.pool)
     for i, n in enumerate(args.dense):
@@ -237,17 +239,21 @@ def evaluate_model(model, generator, steps, metric, category_cutoffs=[0.]):
         x_batch, y_batch = next(generator)
         y_batch_pred = model.predict_on_batch(x_batch)
         y_batch_pred = y_batch_pred.ravel()
-        y_true = np.concatenate((y_true, y_batch)) if y_true is not None else y_batch
-        y_pred = np.concatenate((y_pred, y_batch_pred)) if y_pred is not None else y_batch_pred
+        y_true = np.concatenate(
+            (y_true, y_batch)) if y_true is not None else y_batch
+        y_pred = np.concatenate((y_pred, y_batch_pred)
+                                ) if y_pred is not None else y_batch_pred
         count += 1
 
-    loss = evaluate_keras_metric(y_true.astype(np.float32), y_pred.astype(np.float32), metric)
+    loss = evaluate_keras_metric(y_true.astype(
+        np.float32), y_pred.astype(np.float32), metric)
 
     y_true_class = np.digitize(y_true, category_cutoffs)
     y_pred_class = np.digitize(y_pred, category_cutoffs)
 
     # theano does not like integer input
-    acc = evaluate_keras_metric(y_true_class.astype(np.float32), y_pred_class.astype(np.float32), 'binary_accuracy')  # works for multiclass labels as well
+    acc = evaluate_keras_metric(y_true_class.astype(np.float32), y_pred_class.astype(
+        np.float32), 'binary_accuracy')  # works for multiclass labels as well
 
     return loss, acc, y_true, y_pred, y_true_class, y_pred_class
 
@@ -308,13 +314,18 @@ class MyLossHistory(Callback):
         self.best_val_acc = -np.Inf
 
     def on_epoch_end(self, batch, logs={}):
-        val_loss, val_acc, y_true, y_pred, y_true_class, y_pred_class = evaluate_model(self.model, self.val_gen, self.val_steps, self.metric, self.category_cutoffs)
-        test_loss, test_acc, _, _, _, _ = evaluate_model(self.model, self.test_gen, self.test_steps, self.metric, self.category_cutoffs)
-        self.progbar.append_extra_log_values([('val_acc', val_acc), ('test_loss', test_loss), ('test_acc', test_acc)])
+        val_loss, val_acc, y_true, y_pred, y_true_class, y_pred_class = evaluate_model(
+            self.model, self.val_gen, self.val_steps, self.metric, self.category_cutoffs)
+        test_loss, test_acc, _, _, _, _ = evaluate_model(
+            self.model, self.test_gen, self.test_steps, self.metric, self.category_cutoffs)
+        self.progbar.append_extra_log_values(
+            [('val_acc', val_acc), ('test_loss', test_loss), ('test_acc', test_acc)])
         if float(logs.get('val_loss', 0)) < self.best_val_loss:
             plot_error(y_true, y_pred, batch, self.ext, self.pre)
-        self.best_val_loss = min(float(logs.get('val_loss', 0)), self.best_val_loss)
-        self.best_val_acc = max(float(logs.get('val_acc', 0)), self.best_val_acc)
+        self.best_val_loss = min(
+            float(logs.get('val_loss', 0)), self.best_val_loss)
+        self.best_val_acc = max(
+            float(logs.get('val_acc', 0)), self.best_val_acc)
 
 
 class MyProgbarLogger(ProgbarLogger):
@@ -359,10 +370,12 @@ def main():
 
     ext = extension_from_parameters(args)
 
-    logfile = args.logfile if args.logfile else os.path.join(args.out_dir, args.save)+ext+'.log'
+    logfile = args.logfile if args.logfile else os.path.join(
+        args.out_dir, args.save)+ext+'.log'
 
     fh = logging.FileHandler(logfile)
-    fh.setFormatter(logging.Formatter("[%(asctime)s %(process)d] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
+    fh.setFormatter(logging.Formatter(
+        "[%(asctime)s %(process)d] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
     fh.setLevel(logging.DEBUG)
 
     sh = logging.StreamHandler()
@@ -403,9 +416,11 @@ def main():
             if filters <= 0 or filter_len <= 0 or stride <= 0:
                 break
             if args.locally_connected:
-                model.add(LocallyConnected1D(filters, filter_len, strides=stride, input_shape=(loader.input_dim, 1)))
+                model.add(LocallyConnected1D(filters, filter_len,
+                                             strides=stride, input_shape=(loader.input_dim, 1)))
             else:
-                model.add(Conv1D(filters, filter_len, strides=stride, input_shape=(loader.input_dim, 1)))
+                model.add(Conv1D(filters, filter_len, strides=stride,
+                                 input_shape=(loader.input_dim, 1)))
             if args.batch_normalization:
                 model.add(BatchNormalization())
             model.add(Activation(args.activation))
@@ -428,10 +443,14 @@ def main():
 
     model.compile(loss=args.loss, optimizer=args.optimizer)
 
-    train_gen = p1b3.DataGenerator(loader, batch_size=args.batch_size, shape=gen_shape, name='train_gen').flow()
-    val_gen = p1b3.DataGenerator(loader, partition='val', batch_size=args.batch_size, shape=gen_shape, name='val_gen').flow()
-    val_gen2 = p1b3.DataGenerator(loader, partition='val', batch_size=args.batch_size, shape=gen_shape, name='val_gen2').flow()
-    test_gen = p1b3.DataGenerator(loader, partition='test', batch_size=args.batch_size, shape=gen_shape, name='test_gen').flow()
+    train_gen = p1b3.DataGenerator(
+        loader, batch_size=args.batch_size, shape=gen_shape, name='train_gen').flow()
+    val_gen = p1b3.DataGenerator(
+        loader, partition='val', batch_size=args.batch_size, shape=gen_shape, name='val_gen').flow()
+    val_gen2 = p1b3.DataGenerator(
+        loader, partition='val', batch_size=args.batch_size, shape=gen_shape, name='val_gen2').flow()
+    test_gen = p1b3.DataGenerator(
+        loader, partition='test', batch_size=args.batch_size, shape=gen_shape, name='test_gen').flow()
 
     train_steps = int(loader.n_train/args.batch_size)
     val_steps = int(loader.n_val/args.batch_size)
@@ -441,20 +460,23 @@ def main():
     val_steps = args.val_steps if args.val_steps else val_steps
     test_steps = args.test_steps if args.test_steps else test_steps
 
-    checkpointer = ModelCheckpoint(filepath=os.path.join(args.out_dir, args.save)+'.model'+ext+'.h5', save_best_only=True)
+    checkpointer = ModelCheckpoint(filepath=os.path.join(
+        args.out_dir, args.save)+'.model'+ext+'.h5', save_best_only=True)
     progbar = MyProgbarLogger(train_steps * args.batch_size)
     history = MyLossHistory(progbar=progbar, val_gen=val_gen2, test_gen=test_gen,
                             val_steps=val_steps, test_steps=test_steps,
                             metric=args.loss, category_cutoffs=args.category_cutoffs,
                             ext=ext, pre=os.path.join(args.out_dir, args.save))
 
-    tensorboard = TensorBoard(log_dir="{}/{}".format(os.path.join(args.out_dir), time()))
+    tensorboard = TensorBoard(
+        log_dir="{}/{}".format(os.path.join(args.out_dir), time()))
     model.fit_generator(train_gen, train_steps,
                         epochs=args.epochs,
                         validation_data=val_gen,
                         validation_steps=val_steps,
                         verbose=0,
-                        callbacks=[checkpointer, history, progbar, tensorboard],
+                        callbacks=[checkpointer, history,
+                                   progbar, tensorboard],
                         pickle_safe=True,
                         workers=args.workers)
 
