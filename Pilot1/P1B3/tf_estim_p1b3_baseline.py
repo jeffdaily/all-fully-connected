@@ -72,8 +72,10 @@ def fc_model_fn(features, labels, mode):
         "output": regressed_val,
     }
 
+    tf.logging.info('mode: {}'.format(mode))
     if mode == tf.estimator.ModeKeys.PREDICT:
-        return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
+        return tf.estimator.EstimatorSpec(mode=mode,
+                                          predictions=predictions['output'])
 
     # Calculate Loss (for both TRAIN and EVAL modes)
     loss = tf.losses.mean_squared_error(labels, regressed_val)
@@ -90,7 +92,7 @@ def fc_model_fn(features, labels, mode):
     # Add evaluation metrics (for EVAL mode)
     eval_metric_ops = {
         "accuracy": tf.metrics.accuracy(
-            labels=labels, predictions=predictions)}
+            labels=labels, predictions=predictions['output'])}
     return tf.estimator.EstimatorSpec(
         mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
