@@ -387,7 +387,6 @@ class DataLoader(object):
         test_cell_path = get_p1_file(server+'P1B3_test_celllines.txt')
         test_drug_path = get_p1_file(server+'P1B3_test_drugs.txt')
 
-        set_trace()
         df = load_dose_response(dose_resp_path, min_logconc=min_logconc,
                                 max_logconc=max_logconc, subsample=subsample)
         logger.info(
@@ -486,7 +485,6 @@ class DataLoader(object):
 
         if shuffle:
             df_train_val = df_train_val.sample(frac=1.0, random_state=SEED)
-            set_trace()
             df_test = df_test.sample(frac=1.0, random_state=SEED)
 
         self.df_response = pd.concat(
