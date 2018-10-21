@@ -45,7 +45,6 @@ def input_fn(data_getter):
         .repeat()
         .make_one_shot_iterator().get_next()
     )
-    set_trace()
     return dataset[0], dataset[1]
 
 
@@ -65,7 +64,7 @@ def fc_model_fn(features, labels, mode):
     regressed_val = tf.layers.dense(inputs=dense_4, units=1)
 
     param_count = np.sum([np.prod(v.shape) for v in tf.trainable_variables()])
-    print('Total Param Count: {}'.format(param_count))
+    tf.logging.info('Total Param Count: {}'.format(param_count))
 
     predictions = {
         # Generate predictions (for PREDICT and EVAL mode)
@@ -114,7 +113,6 @@ def main():
                              category_cutoffs=CATEGORY_CUTOFFS)
 
     print('Loader input dim', loader.input_dim)
-    set_trace()
 
     gen_shape = None
 
@@ -134,7 +132,6 @@ def main():
     p1b3_regressor = tf.estimator.Estimator(
         model_fn=fc_model_fn, model_dir="/tmp/fc_regression_model")
 
-    set_trace()
 
     train_spec = tf.estimator.TrainSpec(
         input_fn=lambda: input_fn(train_gen))
