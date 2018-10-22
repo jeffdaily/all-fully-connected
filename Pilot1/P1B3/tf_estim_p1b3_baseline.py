@@ -15,6 +15,8 @@ BATCH_SIZE = 100
 EPOCHS = 20
 WORKERS = 1
 OUT_DIR = '.'
+LEARNING_RATE = 0.01
+D1, D2, D3, D4 = 6000, 500, 100, 50  # Hidden units per layer
 
 # Type of feature scaling (options: 'maxabs': to [-1,1]
 #                                   'minmax': to [0,1]
@@ -30,7 +32,6 @@ CATEGORY_CUTOFFS = [0.]
 VAL_SPLIT = 0.2
 TEST_CELL_SPLIT = 0.15
 
-D1, D2, D3, D4 = 6000, 500, 100, 50
 
 np.set_printoptions(threshold=np.nan)
 np.random.seed(SEED)
@@ -81,7 +82,7 @@ def fc_model_fn(features, labels, mode):
 
     # Configure the Training Op (for TRAIN mode)
     if mode == tf.estimator.ModeKeys.TRAIN:
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.001)
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate=LEARNING_RATE)
         train_op = optimizer.minimize(
             loss=loss,
             global_step=tf.train.get_global_step())
