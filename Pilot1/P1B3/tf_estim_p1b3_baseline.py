@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-"""Multilayer Perceptron for drug response problem converted to TensorFlow"""
+"""Multilayer Perceptron for drug response problem converted to TensorFlow Estimator"""
 
 from __future__ import division, print_function
 
@@ -42,8 +42,9 @@ def input_fn(data_getter):
     dataset = (tf.data.Dataset.from_generator(
         generator=lambda: data_getter,
         output_types=(tf.float32, tf.float32),
+        output_shapes=(tf.TensorShape([BATCH_SIZE, 29532]), tf.TensorShape([BATCH_SIZE,])),
     )
-        .repeat()
+#        .repeat()
         .make_one_shot_iterator().get_next()
     )
     return dataset[0], dataset[1]
@@ -51,7 +52,7 @@ def input_fn(data_getter):
 
 def fc_model_fn(features, labels, mode):
     """Model function for a fully-connected network"""
-
+    set_trace()
     input_layer = tf.reshape(features, [-1, 29532])
     dense_1 = tf.layers.dense(inputs=input_layer, units=D1,
                               activation=tf.nn.relu)
@@ -78,7 +79,7 @@ def fc_model_fn(features, labels, mode):
                                           predictions=predictions['output'])
 
     # Calculate Loss (for both TRAIN and EVAL modes)
-    loss = tf.losses.mean_squared_error(labels, regressed_val)
+    loss = tf.losses.mean_squared_error(labels, tf.reshape(regressed_val, [BATCH_SIZE]))
 
     # Configure the Training Op (for TRAIN mode)
     if mode == tf.estimator.ModeKeys.TRAIN:
@@ -90,17 +91,16 @@ def fc_model_fn(features, labels, mode):
                                           train_op=train_op)
 
     # Add evaluation metrics (for EVAL mode)
-    eval_metric_ops = {
-        "accuracy": tf.metrics.accuracy(
-            labels=labels, predictions=predictions['output'])}
+    mse = tf.metrics.mean_squared_error(
+            labels=labels, predictions=predictions['output'])
+    eval_metric_ops = {'mse': mse}
+    tf.summary.scalar('mse', mse)
     return tf.estimator.EstimatorSpec(
         mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
 
 def main():
-
     tf.logging.set_verbosity(tf.logging.DEBUG)
-
     loader = p1b3.DataLoader(val_split=VAL_SPLIT,
                              test_cell_split=TEST_CELL_SPLIT,
                              cell_features=['expression'],
@@ -113,8 +113,7 @@ def main():
                              subsample='naive_balancing',
                              category_cutoffs=CATEGORY_CUTOFFS)
 
-    print('Loader input dim', loader.input_dim)
-
+    tf.logging.info('Loader input dim: {}'.format(loader.input_dim))
     gen_shape = None
 
     train_gen = p1b3.DataGenerator(loader, batch_size=BATCH_SIZE,
