@@ -14,7 +14,7 @@ from pudb import set_trace
 
 # Model and Training parameters
 SEED = 2016
-BATCH_SIZE = 1000
+BATCH_SIZE = 10
 EPOCHS = 20
 WORKERS = 1
 OUT_DIR = '.'
@@ -41,21 +41,31 @@ np.random.seed(SEED)
 
 
 # TF dataset
+# def input_fn(data_getter):
+#     set_trace()
+#     dataset = (tf.data.Dataset.from_generator(
+#         generator=lambda: data_getter,
+#         output_types=(tf.float32, tf.float32),
+#         output_shapes=(tf.TensorShape([BATCH_SIZE, 29532]), tf.TensorShape([BATCH_SIZE,])),
+#     )
+#         # .repeat()
+#         .make_one_shot_iterator().get_next()
+#     )
+#     return dataset[0], dataset[1]
+
+
 def input_fn(data_getter):
-    dataset = (tf.data.Dataset.from_generator(
+    set_trace()
+    dataset = tf.data.Dataset.from_generator(
         generator=lambda: data_getter,
         output_types=(tf.float32, tf.float32),
         output_shapes=(tf.TensorShape([BATCH_SIZE, 29532]), tf.TensorShape([BATCH_SIZE,])),
-    )
-#        .repeat()
-        .make_one_shot_iterator().get_next()
-    )
-    return dataset[0], dataset[1]
+    ).repeat(100)
+    return dataset
 
 
 def fc_model_fn(features, labels, mode):
     """Model function for a fully-connected network"""
-    set_trace()
     input_layer = tf.reshape(features, [-1, 29532])
     dense_1 = tf.layers.dense(inputs=input_layer, units=D1,
                               activation=tf.nn.relu)
@@ -138,7 +148,9 @@ def main():
     
     # Create the Estimator
     p1b3_regressor = tf.estimator.Estimator(
-        model_fn=fc_model_fn, model_dir="/tmp/fc_regression_model")
+        model_fn=fc_model_fn,
+        model_dir="/tmp/fc_regression_model",
+        config=config)
 
 
     train_spec = tf.estimator.TrainSpec(
