@@ -1,6 +1,9 @@
 #! /usr/bin/env python
 
-"""Multilayer Perceptron for drug response problem converted to TensorFlow Estimator"""
+"""Multilayer Perceptron for drug response problem converted to TensorFlow Estimator
+Uses a distribution strategy according to the recipe here:
+https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/distribute
+"""
 
 from __future__ import division, print_function
 
@@ -11,7 +14,7 @@ from pudb import set_trace
 
 # Model and Training parameters
 SEED = 2016
-BATCH_SIZE = 100
+BATCH_SIZE = 1000
 EPOCHS = 20
 WORKERS = 1
 OUT_DIR = '.'
@@ -128,6 +131,11 @@ def main():
                                   batch_size=BATCH_SIZE,
                                   shape=gen_shape, name='test_gen').flow()
 
+    # prep for distribution
+    devices = ["/device:GPU:4", "/device:GPU:1", "/device:GPU:2", "/device:GPU:3"]
+    distribution = tf.contrib.distribute.MirroredStrategy(devices)  # alternately specify, num_gpus
+    config = tf.estimator.RunConfig(train_distribute=distribution)
+    
     # Create the Estimator
     p1b3_regressor = tf.estimator.Estimator(
         model_fn=fc_model_fn, model_dir="/tmp/fc_regression_model")
