@@ -14,7 +14,7 @@ from pudb import set_trace
 
 # Model and Training parameters
 SEED = 2016
-BATCH_SIZE = 10
+BATCH_SIZE = 100
 EPOCHS = 20
 WORKERS = 1
 OUT_DIR = '.'
@@ -60,7 +60,7 @@ def input_fn(data_getter):
         generator=lambda: data_getter,
         output_types=(tf.float32, tf.float32),
         output_shapes=(tf.TensorShape([BATCH_SIZE, 29532]), tf.TensorShape([BATCH_SIZE,])),
-    ).repeat(100)
+    ).repeat()
     return dataset
 
 
