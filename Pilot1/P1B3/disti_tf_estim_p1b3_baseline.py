@@ -10,7 +10,6 @@ from __future__ import division, print_function
 import numpy as np
 import tensorflow as tf
 import p1b3
-from pudb import set_trace
 
 # Model and Training parameters
 SEED = 2016
@@ -40,22 +39,7 @@ np.set_printoptions(threshold=np.nan)
 np.random.seed(SEED)
 
 
-# TF dataset
-# def input_fn(data_getter):
-#     set_trace()
-#     dataset = (tf.data.Dataset.from_generator(
-#         generator=lambda: data_getter,
-#         output_types=(tf.float32, tf.float32),
-#         output_shapes=(tf.TensorShape([BATCH_SIZE, 29532]), tf.TensorShape([BATCH_SIZE,])),
-#     )
-#         # .repeat()
-#         .make_one_shot_iterator().get_next()
-#     )
-#     return dataset[0], dataset[1]
-
-
 def input_fn(data_getter):
-    set_trace()
     dataset = tf.data.Dataset.from_generator(
         generator=lambda: data_getter,
         output_types=(tf.float32, tf.float32),
@@ -141,9 +125,9 @@ def main():
                                   batch_size=BATCH_SIZE,
                                   shape=gen_shape, name='test_gen').flow()
 
-    # prep for distribution
-    devices = ["/device:GPU:4", "/device:GPU:1", "/device:GPU:2", "/device:GPU:3"]
-    distribution = tf.contrib.distribute.MirroredStrategy(devices)  # alternately specify, num_gpus
+    # Prep for distribution using mirrorred strategy
+    devices = ["/device:GPU:0", "/device:GPU:1", "/device:GPU:2", "/device:GPU:3"]
+    distribution = tf.contrib.distribute.MirroredStrategy(devices)  # alternately specify num_gpus
     config = tf.estimator.RunConfig(train_distribute=distribution)
     
     # Create the Estimator
@@ -152,13 +136,12 @@ def main():
         model_dir="/tmp/fc_regression_model",
         config=config)
 
-
+    # Train & eval
     train_spec = tf.estimator.TrainSpec(
         input_fn=lambda: input_fn(train_gen))
     eval_spec = tf.estimator.EvalSpec(
         input_fn=lambda: input_fn(val_gen))
     tf.estimator.train_and_evaluate(p1b3_regressor, train_spec, eval_spec)
-
 
 if __name__ == '__main__':
     main()
