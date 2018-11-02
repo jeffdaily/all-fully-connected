@@ -8,7 +8,7 @@ HIP_VISIBLE_DEVICES=0,1 python3 all_sum_static_graph_unit_test.py -d <some-large
 """
 
 import tensorflow as tf
-from tensorflow.contrib.nccl import all_sum
+from tensorflow.contrib.rccl import all_sum
 import argparse
 import os
 import time
