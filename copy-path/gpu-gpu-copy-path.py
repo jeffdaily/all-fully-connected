@@ -42,5 +42,8 @@ print(sess.run(var1))
 
 print("After, var1")
 start = time.clock()
-print(sess.run(assign_op))
-print('Time taken:', time.clock() - start)
+sess.run(assign_op) #  run with as little overhead as you can
+time_taken = time.clock() - start
+
+print(sess.run(assign_op)) # run to check correctness
+print('Time taken:', time_taken)
