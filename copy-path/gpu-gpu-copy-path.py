@@ -15,12 +15,12 @@ parser.add_argument("-d", "--dim", type=int, default=2,
 args = parser.parse_args()
 print('Dimensions chosen:', args.dim, 'X', args.dim)
 
-# var1 is on gpu:0 and initialized to 1
+# var0 is on gpu:0 and initialized to 1
 with tf.device('/gpu:0'):
     var0 = tf.get_variable(
         "var1", initializer=tf.constant(1.0, shape=(args.dim, args.dim)))
 
-# var2 on gpu:1 and initialized to random values
+# var1 on gpu:1 and initialized to random values
 with tf.device('/gpu:1'):
     var1 = tf.get_variable(
         "var2", initializer=tf.random.normal(shape=(args.dim, args.dim)))
