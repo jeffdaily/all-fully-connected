@@ -18,12 +18,15 @@ print('Dimensions chosen:', args.dim, 'X', args.dim)
 # var0 is on gpu:0 and initialized to 1
 with tf.device('/gpu:0'):
     var0 = tf.get_variable(
-        "var1", initializer=tf.constant(1.0, shape=(args.dim, args.dim)))
+        "var1", initializer=tf.constant(1.0,
+                                        shape=(args.dim, args.dim),
+                                        dtype=tf.float64))
 
 # var1 on gpu:1 and initialized to random values
 with tf.device('/gpu:1'):
     var1 = tf.get_variable(
-        "var2", initializer=tf.random.normal(shape=(args.dim, args.dim)))
+        "var2", initializer=tf.random.normal(shape=(args.dim, args.dim),
+                                             dtype=tf.float64))
 
 # Define op to initilize 
 init_op = tf.initialize_all_variables()
@@ -40,7 +43,7 @@ print(sess.run(var0))
 print("Before, var1")
 print(sess.run(var1))
 
-print("After, var1")
+print("After copy, var1")
 start = time.clock()
 sess.run(assign_op) #  run with as little overhead as you can
 time_taken = time.clock() - start
