@@ -4,6 +4,7 @@ import os
 import time
 
 """
+Copies d-squared float64s (specified with -d option) from gpu:0 to gpu:1
 run like this:
 python3 gpu-gpu-copy-path.py -d 10000
 """
@@ -15,17 +16,17 @@ parser.add_argument("-d", "--dim", type=int, default=2,
 args = parser.parse_args()
 print('Dimensions chosen:', args.dim, 'X', args.dim)
 
-# var0 is on gpu:0 and initialized to 1
+# var0 is on gpu:0 and initialized to 1s
 with tf.device('/gpu:0'):
     var0 = tf.get_variable(
-        "var1", initializer=tf.constant(1.0,
+        "var0", initializer=tf.constant(1.0,
                                         shape=(args.dim, args.dim),
                                         dtype=tf.float64))
 
 # var1 on gpu:1 and initialized to random values
 with tf.device('/gpu:1'):
     var1 = tf.get_variable(
-        "var2", initializer=tf.random.normal(shape=(args.dim, args.dim),
+        "var1", initializer=tf.random.normal(shape=(args.dim, args.dim),
                                              dtype=tf.float64))
 
 # Define op to initilize 
@@ -48,5 +49,5 @@ start = time.clock()
 sess.run(assign_op) #  run with as little overhead as you can
 time_taken = time.clock() - start
 
-print(sess.run(assign_op)) # run to check correctness
+print(sess.run(assign_op)) # rerun to show correctness
 print('Time taken:', time_taken)
