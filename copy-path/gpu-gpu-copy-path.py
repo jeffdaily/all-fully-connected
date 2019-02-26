@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.python.client import timeline
 import argparse
 import os
 import time
@@ -35,19 +36,30 @@ init_op = tf.initialize_all_variables()
 # Define graph to copy from gpu0 to gpu1
 assign_op = tf.assign(var1, var0)
 
-sess = tf.Session()
-sess.run(init_op)
 
-print("Before, var0")
-print(sess.run(var0))
+with tf.Session() as sess:
+    # add additional options to trace the session execution
+    options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+    run_metadata = tf.RunMetadata()
 
-print("Before, var1")
-print(sess.run(var1))
+    sess.run(init_op)
 
-print("After copy, var1")
-start = time.clock()
-sess.run(assign_op) #  run with as little overhead as you can
-time_taken = time.clock() - start
+    print("Before, var0")
+    print(sess.run(var0))
 
-print(sess.run(assign_op)) # rerun to show correctness
-print('Time taken:', time_taken)
+    print("Before, var1")
+    print(sess.run(var1))
+
+    start = time.clock()
+    sess.run(assign_op, options=options, run_metadata=run_metadata) #  run with trace
+    time_taken = time.clock() - start
+
+    # print("After copy, var1")
+    # print(sess.run(assign_op)) # rerun to show correctness
+    # print('Time taken:', time_taken)
+
+    # Create the Timeline object, and write it to a json file
+    fetched_timeline = timeline.Timeline(run_metadata.step_stats)
+    chrome_trace = fetched_timeline.generate_chrome_trace_format()
+    with open('timeline_gpu_copy.json', 'w') as f:
+        f.write(chrome_trace)
