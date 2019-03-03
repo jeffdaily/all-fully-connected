@@ -3,12 +3,11 @@ from tensorflow.contrib.nccl import all_sum
 
 
 def repeat(object, times=None):
-    # repeat(10, 3) --> 10 10 10
-    if times is None:
+    if times is None:  # infinite
         while True:
             yield object
     else:
-        for i in range(times):
+        for i in range(times):  # finite
             yield object
 
 
