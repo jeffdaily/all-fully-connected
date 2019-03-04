@@ -1,14 +1,6 @@
 import tensorflow as tf
+from itertools import repeat
 from tensorflow.contrib.nccl import all_sum
-
-
-def repeat(object, times=None):
-    if times is None:  # infinite
-        while True:
-            yield object
-    else:
-        for i in range(times):  # finite
-            yield object
 
 
 with tf.device('/gpu:0'):
